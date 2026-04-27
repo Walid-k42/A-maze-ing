@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from typing import List, Set, Tuple
 
 
@@ -47,18 +48,3 @@ class MazeTester:
 
         return grid
 
-
-def main() -> None:
-    width, height = 2, 7
-    print(f"--- Test d'initialisation avec motif 42 ({width}x{height}) ---")
-
-    tester = MazeTester(width, height)
-    grid = tester._init_ascii_grid()
-
-    if grid:
-        for row in grid:
-            print("".join(row))
-
-
-if __name__ == "__main__":
-    main()

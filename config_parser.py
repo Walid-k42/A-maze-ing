@@ -36,7 +36,7 @@ class MazeConfig(BaseModel):
 
         if self.entry[1] > self.height or self.entry[0] > self.width:
             raise ValueError(f"Entry coordinates {self.entry} can't be "
-                             f"outside the maze {self.height}x{self.width}")
+                             f"outside the maze ({self.height}x{self.width})")
 
         if self.exit[1] > self.height or self.exit[0] > self.width:
             raise ValueError(f"Exit coordinates {self.exit} can't be "
@@ -68,21 +68,3 @@ def read_and_split(filename: str) -> dict[str, Any]:
         print(f"Error: {filename} not found")
 
     return configs
-
-
-def main() -> None:
-
-    filename = "config.txt"
-    valid_data = read_and_split(filename)
-
-    try:
-        config = MazeConfig(**valid_data)
-        print(f"test: {config}")
-
-    except ValidationError as e:
-        clean_msg = e.errors()[0]['msg'].replace("Value error, ", "")
-        print(f"Error: {clean_msg}")
-
-
-if __name__ == "__main__":
-    main()
