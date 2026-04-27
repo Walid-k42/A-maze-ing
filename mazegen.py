@@ -47,4 +47,3 @@ class MazeTester:
                     grid[char_y][char_x] = " "
 
         return grid
-
