@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
 from typing import List, Set, Tuple
+import random
 
 
 class MazeTester:
     def __init__(self, width: int, height: int) -> None:
         self.width = width
         self.height = height
+        self.grid = [[15 for _ in range(width)] for _ in range(height)]
         self.pattern_cells: Set[Tuple[int, int]] = set()
         self._setup_42_pattern()
 
@@ -37,7 +38,6 @@ class MazeTester:
 
         for y in range(self.height):
             for x in range(self.width):
-
                 char_x = x * 2 + 1
                 char_y = y * 2 + 1
 
@@ -45,6 +45,60 @@ class MazeTester:
                     grid[char_y][char_x] = "@"
                 else:
                     grid[char_y][char_x] = " "
-
         return grid
 
+    def _apply_walls_to_ascii(self, ascii_grid: List[List[str]]) -> None:
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) in self.pattern_cells:
+                    continue
+
+                val = self.grid[y][x]
+                cx, cy = x * 2 + 1, y * 2 + 1
+
+                if not (val & 1):
+                    ascii_grid[cy - 1][cx] = " "
+                if not (val & 2):
+                    ascii_grid[cy][cx + 1] = " "
+                if not (val & 4):
+                    ascii_grid[cy + 1][cx] = " "
+                if not (val & 8):
+                    ascii_grid[cy][cx - 1] = " "
+
+    def generate(self, seed: int = None) -> None:
+        if seed is not None:
+            random.seed(seed)
+
+        start_cell = self.entry_coords
+        stack = [start_cell]
+
+        visited = {start_cell} | self.pattern_cells
+
+        while stack:
+            cx, cy = stack[-1]
+            neighbors = []
+
+            directions = [
+                (0, -1, 1, 4),
+                (1, 0, 2, 8),
+                (0, 1, 4, 1),
+                (-1, 0, 8, 2)
+            ]
+
+            for dx, dy, bit, opp in directions:
+                nx, ny = cx + dx, cy + dy
+
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    if (nx, ny) not in visited:
+                        neighbors.append((nx, ny, bit, opp))
+
+            if neighbors:
+                nx, ny, bit, opp = random.choice(neighbors)
+
+                self.grid[cy][cx] -= bit
+                self.grid[ny][nx] -= opp
+
+                visited.add((nx, ny))
+                stack.append((nx, ny))
+            else:
+                stack.pop()
