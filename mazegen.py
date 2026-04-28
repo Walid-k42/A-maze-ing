@@ -1,5 +1,6 @@
 import random
 
+
 class MazeTester:
     def __init__(self, width: int, height: int,
                  entry: list[int], exit_p: list[int]) -> None:
@@ -9,8 +10,8 @@ class MazeTester:
         self.entry_y = entry[1]
         self.exit_x = exit_p[0]
         self.exit_y = exit_p[1]
-        self.wall_char = "█"
-        self.pattern_char = "▓"
+        self.wall_char = "██"
+        self.pattern_char = "▓▓"
         self.grid = []
         for y in range(height):
             row = []
@@ -65,7 +66,7 @@ class MazeTester:
                 if self.is_pattern_cell(x, y):
                     grid[char_y][char_x] = self.pattern_char
                 else:
-                    grid[char_y][char_x] = " "
+                    grid[char_y][char_x] = "  "
         return grid
 
     def apply_walls_to_ascii(self, ascii_grid: list[list[str]]) -> None:
@@ -77,13 +78,13 @@ class MazeTester:
                 cx = x * 2 + 1
                 cy = y * 2 + 1
                 if not cell["N"]:
-                    ascii_grid[cy - 1][cx] = " "
+                    ascii_grid[cy - 1][cx] = "  "
                 if not cell["E"]:
-                    ascii_grid[cy][cx + 1] = " "
+                    ascii_grid[cy][cx + 1] = "  "
                 if not cell["S"]:
-                    ascii_grid[cy + 1][cx] = " "
+                    ascii_grid[cy + 1][cx] = "  "
                 if not cell["W"]:
-                    ascii_grid[cy][cx - 1] = " "
+                    ascii_grid[cy][cx - 1] = "  "
 
     def generate(self, seed: int | None = None) -> None:
         if seed is not None:
