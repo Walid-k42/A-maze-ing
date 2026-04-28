@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from pydantic import BaseModel, Field, model_validator, field_validator
-from enum import Enum
+from enum import Enum # NOQA
 from typing import Any, Annotated
 
 

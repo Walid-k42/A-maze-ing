@@ -1,88 +1,130 @@
-from typing import List, Set, Tuple
 import random
 
 
 class MazeTester:
-    def __init__(self, width: int, height: int, entry: Tuple[int, int], exit_coords: Tuple[int, int]) -> None:
+    def __init__(self, width: int, height: int,
+                 entry: list[int], exit_p: list[int]) -> None:
         self.width = width
         self.height = height
-        self.entry_coords = entry
-        self.exit_coords = exit_coords
-        self.grid = [[15 for _ in range(width)] for _ in range(height)]
-        self.pattern_cells: Set[Tuple[int, int]] = set()
-        self.wall_char = "█" 
+        self.entry_x = entry[0]
+        self.entry_y = entry[1]
+        self.exit_x = exit_p[0]
+        self.exit_y = exit_p[1]
+        self.wall_char = "█"
         self.pattern_char = "▓"
+        self.grid = []
+        for y in range(height):
+            row = []
+            for x in range(width):
+                row.append({"N": True, "E": True, "S": True, "W": True})
+            self.grid.append(row)
+        self.pattern_cells = []
         self._setup_42_pattern()
 
     def _setup_42_pattern(self) -> None:
-        p_width, p_height = 7, 5
+        p_width = 7
+        p_height = 5
         if self.width < p_width or self.height < p_height:
             print("Error: Maze size is too small to display the '42' pattern.")
             return
-
-        start_x = (self.width - p_width) // 2
-        start_y = (self.height - p_height) // 2
-
+        start_x = int((self.width - p_width) / 2)
+        start_y = int((self.height - p_height) / 2)
         relative_coords = [
-            (0, 0), (0, 1), (0, 2), (1, 2), (2, 0), (2, 1), (2, 2),
-            (2, 3), (2, 4), (4, 0), (5, 0), (6, 0), (6, 1), (4, 2),
-            (5, 2), (6, 2), (4, 3), (4, 4), (5, 4), (6, 4)
+            {"x": 0, "y": 0}, {"x": 0, "y": 1}, {"x": 0, "y": 2},
+            {"x": 1, "y": 2}, {"x": 2, "y": 0}, {"x": 2, "y": 1},
+            {"x": 2, "y": 2}, {"x": 2, "y": 3}, {"x": 2, "y": 4},
+            {"x": 4, "y": 0}, {"x": 5, "y": 0}, {"x": 6, "y": 0},
+            {"x": 6, "y": 1}, {"x": 4, "y": 2}, {"x": 5, "y": 2},
+            {"x": 6, "y": 2}, {"x": 4, "y": 3}, {"x": 4, "y": 4},
+            {"x": 5, "y": 4}, {"x": 6, "y": 4}
         ]
+        for coord in relative_coords:
+            self.pattern_cells.append({
+                "x": start_x + coord["x"],
+                "y": start_y + coord["y"]
+            })
 
-        self.pattern_cells = {
-            (start_x + dx, start_y + dy) for dx, dy in relative_coords
-        }
+    def _is_pattern_cell(self, check_x: int, check_y: int) -> bool:
+        for cell in self.pattern_cells:
+            if cell["x"] == check_x and cell["y"] == check_y:
+                return True
+        return False
 
-    def _init_ascii_grid(self) -> List[List[str]]:
+    def _init_ascii_grid(self) -> list[list[str]]:
         ascii_width = 2 * self.width + 1
         ascii_height = 2 * self.height + 1
-        grid = [[self.wall_char for _ in range(ascii_width)] for _ in range(ascii_height)]
-
+        grid = []
+        for y in range(ascii_height):
+            row = []
+            for x in range(ascii_width):
+                row.append(self.wall_char)
+            grid.append(row)
         for y in range(self.height):
             for x in range(self.width):
                 char_x = x * 2 + 1
                 char_y = y * 2 + 1
-                if (x, y) in self.pattern_cells:
+                if self._is_pattern_cell(x, y):
                     grid[char_y][char_x] = self.pattern_char
                 else:
                     grid[char_y][char_x] = " "
         return grid
 
-    def _apply_walls_to_ascii(self, ascii_grid: List[List[str]]) -> None:
+    def _apply_walls_to_ascii(self, ascii_grid: list[list[str]]) -> None:
         for y in range(self.height):
             for x in range(self.width):
-                if (x, y) in self.pattern_cells:
+                if self._is_pattern_cell(x, y):
                     continue
-                val = self.grid[y][x]
-                cx, cy = x * 2 + 1, y * 2 + 1
-                if not (val & 1):
+                cell = self.grid[y][x]
+                cx = x * 2 + 1
+                cy = y * 2 + 1
+                if not cell["N"]:
                     ascii_grid[cy - 1][cx] = " "
-                if not (val & 2):
+                if not cell["E"]:
                     ascii_grid[cy][cx + 1] = " "
-                if not (val & 4):
-                    ascii_grid[cy + 1][cx] = " "
-                if not (val & 8):
+                if not cell["S"]:
+                    ascii_grid[cy + 1][cx] = ") "
+                if not cell["W"]:
                     ascii_grid[cy][cx - 1] = " "
 
-    def generate(self, seed: int = None) -> None:
+    def generate(self, seed: int | None = None) -> None:
         if seed is not None:
             random.seed(seed)
-        stack = [self.entry_coords]
-        visited = {self.entry_coords} | self.pattern_cells
-        while stack:
-            cx, cy = stack[-1]
+        stack = [{"x": self.entry_x, "y": self.entry_y}]
+        visited = []
+        for y in range(self.height):
+            row = []
+            for x in range(self.width):
+                row.append(False)
+            visited.append(row)
+        for cell in self.pattern_cells:
+            visited[cell["y"]][cell["x"]] = True
+
+        visited[self.entry_y][self.entry_x] = True
+        while len(stack) > 0:
+            current = stack[-1]
+            cx = current["x"]
+            cy = current["y"]
             neighbors = []
-            directions = [(0, -1, 1, 4), (1, 0, 2, 8), (0, 1, 4, 1), (-1, 0, 8, 2)]
-            for dx, dy, bit, opp in directions:
-                nx, ny = cx + dx, cy + dy
+            directions = [
+                {"dx": 0, "dy": -1, "wall": "N", "opp": "S"},
+                {"dx": 1, "dy": 0, "wall": "E", "opp": "W"},
+                {"dx": 0, "dy": 1, "wall": "S", "opp": "N"},
+                {"dx": -1, "dy": 0, "wall": "W", "opp": "E"}
+            ]
+            for d in directions:
+                nx = cx + d["dx"]
+                ny = cy + d["dy"]
                 if 0 <= nx < self.width and 0 <= ny < self.height:
-                    if (nx, ny) not in visited:
-                        neighbors.append((nx, ny, bit, opp))
-            if neighbors:
-                nx, ny, bit, opp = random.choice(neighbors)
-                self.grid[cy][cx] -= bit
-                self.grid[ny][nx] -= opp
-                visited.add((nx, ny))
-                stack.append((nx, ny))
+                    if not visited[ny][nx]:
+                        neighbors.append({
+                            "x": nx, "y": ny,
+                            "wall": d["wall"], "opp": d["opp"]
+                        })
+            if len(neighbors) > 0:
+                chosen = random.choice(neighbors)
+                self.grid[cy][cx][chosen["wall"]] = False
+                self.grid[chosen["y"]][chosen["x"]][chosen["opp"]] = False
+                visited[chosen["y"]][chosen["x"]] = True
+                stack.append({"x": chosen["x"], "y": chosen["y"]})
             else:
                 stack.pop()
