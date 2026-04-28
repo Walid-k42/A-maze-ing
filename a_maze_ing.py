@@ -8,21 +8,25 @@ from mazegen import MazeTester
 from config_parser import MazeConfig, read_and_split
 
 TITLE = r"""
-    ___           __  ___                     _            
+    ___           __  ___                     _
    /   |         /  |/  /____ _ ____ ___     (_)____   ____ _
   / /| | ______ / /|_/ // __ `//_  // _ \ ______/ // __ \ / __ `/
- / ___ |/_____// /  / // /_/ /  / //  __//_____/ / / / // /_/ / 
-/_/  |_|      /_/  /_/ \__,_/  /___/\___/     /_/_/ /_/\__, /  
-                                                      /____/   
+ / ___ |/_____// /  / // /_/ /  / //  __//_____/ / / / // /_/ /
+/_/  |_|      /_/  /_/ \__,_/  /___/\___/     /_/_/ /_/\__, /
+                                                      /____/
 """
 
 COLOR_RESET = '\033[0m'
 
 THEMES = [
-    {"name": "VSCode", "wall": "\033[94m", "pattern": "\033[92m", "menu": "\033[93m"},
-    {"name": "Matrix", "wall": "\033[32m", "pattern": "\033[92m", "menu": "\033[32m"},
-    {"name": "Cyberpunk", "wall": "\033[95m", "pattern": "\033[96m", "menu": "\033[93m"},
-    {"name": "Hell", "wall": "\033[91m", "pattern": "\033[93m", "menu": "\033[31m"},
+    {"name": "Ghost", "wall": "\033[90m", "pattern": "\033[97m",
+     "menu": "\033[90m"},
+    {"name": "Barca", "wall": "\033[34m", "pattern": "\033[31m",
+     "menu": "\033[93m"},
+    {"name": "Cyberpunk", "wall": "\033[95m", "pattern": "\033[96m",
+     "menu": "\033[95m"},
+    {"name": "Hell", "wall": "\033[91m", "pattern": "\033[93m",
+     "menu": "\033[31m"},
 ]
 
 
@@ -77,24 +81,27 @@ def main() -> None:
                 for row in grid:
                     line = "".join(row)
                     line = line.replace("█", f"{theme['wall']}█{COLOR_RESET}")
-                    line = line.replace("▓", f"{theme['pattern']}▓{COLOR_RESET}")
+                    line = line.replace("▓",
+                                        f"{theme['pattern']}▓{COLOR_RESET}")
                     print(line)
 
-            print(f"Seed: {current_seed}")
             if config.width < 7 or config.height < 5:
-                print(" [!] Warning: The maze is too small to "
-                      "display the '42' pattern.")
-            print("\n --- MENU ---")
-            print("[R] Regenerate")
-            print("[S] Enter a seed")
-            print("[Q] Quit")
+                print(f"{theme['menu']} [!] Warning: The maze is too small to "
+                      f"display the '42' pattern.{COLOR_RESET}")
 
+            print(f"\n{theme['menu']} --- MENU (Seed: {current_seed} | "
+                  f"Theme: {theme['name']}) ---{COLOR_RESET}")
+            print(f"{theme['menu']}[R] Regenerate  |  [S] Enter a seed  |  [C]"
+                  f" Change Color  |  [Q] Quit{COLOR_RESET}")
             choice = get_single_key().lower()
 
             if choice == 'q':
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("Closing the maze...")
                 break
+
+            elif choice == 'c':
+                theme_index = (theme_index + 1) % len(THEMES)
 
             elif choice == 'r':
                 current_seed = random.randint(1, 999999)
@@ -105,7 +112,8 @@ def main() -> None:
                 tester.apply_walls_to_ascii(grid)
 
             elif choice == 's':
-                seed_u = input("\n Enter your seed and press [Enter]").strip()
+                seed_u = input(f"\n{theme['menu']} Enter your seed and press "
+                               f"[Enter]: {COLOR_RESET}").strip()
 
                 if seed_u.isdigit():
                     current_seed = int(seed_u)
@@ -116,7 +124,8 @@ def main() -> None:
                     tester.apply_walls_to_ascii(grid)
 
                 else:
-                    print(" Invalid seed. Please enter a positive number.")
+                    print(f"{theme['wall']} Invalid seed. Please enter a "
+                          f"positive number.{COLOR_RESET}")
 
     except ValidationError as e:
         clean_msg = e.errors()[0]['msg'].replace("Value error, ", "")
