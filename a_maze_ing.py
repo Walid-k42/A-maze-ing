@@ -23,9 +23,9 @@ def main() -> None:
 
         tester.generate()
 
-        grid = tester._init_ascii_grid()
+        grid = tester.init_ascii_grid()
 
-        tester._apply_walls_to_ascii(grid)
+        tester.apply_walls_to_ascii(grid)
 
         if grid:
             for row in grid:

@@ -1,6 +1,5 @@
 import random
 
-
 class MazeTester:
     def __init__(self, width: int, height: int,
                  entry: list[int], exit_p: list[int]) -> None:
@@ -19,9 +18,9 @@ class MazeTester:
                 row.append({"N": True, "E": True, "S": True, "W": True})
             self.grid.append(row)
         self.pattern_cells = []
-        self._setup_42_pattern()
+        self.setup_42_pattern()
 
-    def _setup_42_pattern(self) -> None:
+    def setup_42_pattern(self) -> None:
         p_width = 7
         p_height = 5
         if self.width < p_width or self.height < p_height:
@@ -44,13 +43,13 @@ class MazeTester:
                 "y": start_y + coord["y"]
             })
 
-    def _is_pattern_cell(self, check_x: int, check_y: int) -> bool:
+    def is_pattern_cell(self, check_x: int, check_y: int) -> bool:
         for cell in self.pattern_cells:
             if cell["x"] == check_x and cell["y"] == check_y:
                 return True
         return False
 
-    def _init_ascii_grid(self) -> list[list[str]]:
+    def init_ascii_grid(self) -> list[list[str]]:
         ascii_width = 2 * self.width + 1
         ascii_height = 2 * self.height + 1
         grid = []
@@ -63,16 +62,16 @@ class MazeTester:
             for x in range(self.width):
                 char_x = x * 2 + 1
                 char_y = y * 2 + 1
-                if self._is_pattern_cell(x, y):
+                if self.is_pattern_cell(x, y):
                     grid[char_y][char_x] = self.pattern_char
                 else:
                     grid[char_y][char_x] = " "
         return grid
 
-    def _apply_walls_to_ascii(self, ascii_grid: list[list[str]]) -> None:
+    def apply_walls_to_ascii(self, ascii_grid: list[list[str]]) -> None:
         for y in range(self.height):
             for x in range(self.width):
-                if self._is_pattern_cell(x, y):
+                if self.is_pattern_cell(x, y):
                     continue
                 cell = self.grid[y][x]
                 cx = x * 2 + 1
@@ -82,7 +81,7 @@ class MazeTester:
                 if not cell["E"]:
                     ascii_grid[cy][cx + 1] = " "
                 if not cell["S"]:
-                    ascii_grid[cy + 1][cx] = ") "
+                    ascii_grid[cy + 1][cx] = " "
                 if not cell["W"]:
                     ascii_grid[cy][cx - 1] = " "
 
