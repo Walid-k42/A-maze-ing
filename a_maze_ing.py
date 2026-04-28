@@ -63,7 +63,7 @@ def main() -> None:
                             config.exit)
 
         current_seed = random.randint(1, 999999)
-        tester.generate(seed=current_seed)
+        tester.generate(seed=current_seed, animate=True)
         grid = tester.init_ascii_grid()
         tester.apply_walls_to_ascii(grid)
 
@@ -107,7 +107,7 @@ def main() -> None:
                 current_seed = random.randint(1, 999999)
                 tester = MazeTester(config.width, config.height, config.entry,
                                     config.exit)
-                tester.generate(seed=current_seed)
+                tester.generate(seed=current_seed, animate=True)
                 grid = tester.init_ascii_grid()
                 tester.apply_walls_to_ascii(grid)
 
@@ -119,7 +119,7 @@ def main() -> None:
                     current_seed = int(seed_u)
                     tester = MazeTester(config.width, config.height,
                                         config.entry, config.exit)
-                    tester.generate(seed=current_seed)
+                    tester.generate(seed=current_seed, animate=True)
                     grid = tester.init_ascii_grid()
                     tester.apply_walls_to_ascii(grid)
 
