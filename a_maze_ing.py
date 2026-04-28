@@ -7,6 +7,24 @@ from pydantic import ValidationError
 from mazegen import MazeTester
 from config_parser import MazeConfig, read_and_split
 
+TITLE = r"""
+    ___           __  ___                     _            
+   /   |         /  |/  /____ _ ____ ___     (_)____   ____ _
+  / /| | ______ / /|_/ // __ `//_  // _ \ ______/ // __ \ / __ `/
+ / ___ |/_____// /  / // /_/ /  / //  __//_____/ / / / // /_/ / 
+/_/  |_|      /_/  /_/ \__,_/  /___/\___/     /_/_/ /_/\__, /  
+                                                      /____/   
+"""
+
+COLOR_RESET = '\033[0m'
+
+THEMES = [
+    {"name": "VSCode", "wall": "\033[94m", "pattern": "\033[92m", "menu": "\033[93m"},
+    {"name": "Matrix", "wall": "\033[32m", "pattern": "\033[92m", "menu": "\033[32m"},
+    {"name": "Cyberpunk", "wall": "\033[95m", "pattern": "\033[96m", "menu": "\033[93m"},
+    {"name": "Hell", "wall": "\033[91m", "pattern": "\033[93m", "menu": "\033[31m"},
+]
+
 
 def get_single_key() -> str:
 
@@ -45,15 +63,27 @@ def main() -> None:
         grid = tester.init_ascii_grid()
         tester.apply_walls_to_ascii(grid)
 
+        theme_index = 0
+
         while True:
 
             os.system('cls' if os.name == 'nt' else 'clear')
 
+            theme = THEMES[theme_index]
+
+            print(f"{theme['menu']}{TITLE}{COLOR_RESET}")
+
             if grid:
                 for row in grid:
-                    print("".join(row))
+                    line = "".join(row)
+                    line = line.replace("█", f"{theme['wall']}█{COLOR_RESET}")
+                    line = line.replace("▓", f"{theme['pattern']}▓{COLOR_RESET}")
+                    print(line)
 
             print(f"Seed: {current_seed}")
+            if config.width < 7 or config.height < 5:
+                print(" [!] Warning: The maze is too small to "
+                      "display the '42' pattern.")
             print("\n --- MENU ---")
             print("[R] Regenerate")
             print("[S] Enter a seed")
