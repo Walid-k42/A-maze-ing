@@ -1,4 +1,6 @@
 import random
+from time import sleep
+import os
 
 
 class MazeTester:
@@ -63,7 +65,11 @@ class MazeTester:
             for x in range(self.width):
                 char_x = x * 2 + 1
                 char_y = y * 2 + 1
-                if self.is_pattern_cell(x, y):
+                if x == self.entry_x and y == self.entry_y:
+                    grid[char_y][char_x] = "S "
+                elif x == self.exit_x and y == self.exit_y:
+                    grid[char_y][char_x] = "E "
+                elif self.is_pattern_cell(x, y):
                     grid[char_y][char_x] = self.pattern_char
                 else:
                     grid[char_y][char_x] = "  "
@@ -86,7 +92,7 @@ class MazeTester:
                 if not cell["W"]:
                     ascii_grid[cy][cx - 1] = "  "
 
-    def generate(self, seed: int | None = None) -> None:
+    def generate(self, seed: int | None = None, animate: bool = False) -> None:
         if seed is not None:
             random.seed(seed)
         stack = [{"x": self.entry_x, "y": self.entry_y}]
@@ -101,6 +107,13 @@ class MazeTester:
 
         visited[self.entry_y][self.entry_x] = True
         while len(stack) > 0:
+            if animate:
+                os.system('clear')
+                temp_grid = self.init_ascii_grid()
+                self.apply_walls_to_ascii(temp_grid)
+                for row in temp_grid:
+                    print("".join(row))
+                sleep(0.002)
             current = stack[-1]
             cx = current["x"]
             cy = current["y"]
