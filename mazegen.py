@@ -66,9 +66,9 @@ class MazeTester:
                 char_x = x * 2 + 1
                 char_y = y * 2 + 1
                 if x == self.entry_x and y == self.entry_y:
-                    grid[char_y][char_x] = "S "
+                    grid[char_y][char_x] = "START "
                 elif x == self.exit_x and y == self.exit_y:
-                    grid[char_y][char_x] = "E "
+                    grid[char_y][char_x] = "END "
                 elif self.is_pattern_cell(x, y):
                     grid[char_y][char_x] = self.pattern_char
                 else:
@@ -106,14 +106,23 @@ class MazeTester:
             visited[cell["y"]][cell["x"]] = True
 
         visited[self.entry_y][self.entry_x] = True
+        if animate:
+            os.system('cls' if os.name == 'nt' else 'clear')
+
         while len(stack) > 0:
             if animate:
-                os.system('clear')
+                print('\033[H', end='')
                 temp_grid = self.init_ascii_grid()
                 self.apply_walls_to_ascii(temp_grid)
-                for row in temp_grid:
-                    print("".join(row))
-                sleep(0.002)
+
+                frame = ""
+                for line in temp_grid:
+                    l_str = "".join(line).replace("START ", "\033[92m██\033[0m") \
+                                         .replace("END ", "\033[91m██\033[0m")
+                    frame += l_str + "\n"
+                print(frame, end='', flush=True)
+                sleep(0.01)
+
             current = stack[-1]
             cx = current["x"]
             cy = current["y"]
@@ -182,3 +191,25 @@ class MazeTester:
                 curr = parents[curr]
             path.append({"x": self.entry_x, "y": self.entry_y})
         return path
+
+    def export_to_hex(self, filename: str) -> None:
+        try:
+            with open(filename, 'w') as f:
+                for row in self.grid:
+                    line_hex = ""
+                    for cell in row:
+                        val = 0
+                        if cell["N"]:
+                            val += 1
+                        if cell["S"]:
+                            val += 2
+                        if cell["E"]:
+                            val += 4
+                        if cell["W"]:
+                            val += 8
+
+                        line_hex += hex(val)[2:].upper()
+
+                    f.write(line_hex + "\n")
+        except Exception as e:
+            print(f"Warning: Could not save the hex file. {e}")

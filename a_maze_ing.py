@@ -47,9 +47,8 @@ def get_single_key() -> str:
 def apply_solution(grid: list[list[str]], tester: MazeTester) -> None:
     path = tester.solve()
     for cell in path:
-        cx = cell["x"] * 2 + 1
-        cy = cell["y"] * 2 + 1
-        if grid[cy][cx] not in ["S ", "E "]:
+        cx, cy = cell["x"] * 2 + 1, cell["y"] * 2 + 1
+        if grid[cy][cx] == "  ":
             grid[cy][cx] = "o "
 
 
@@ -67,14 +66,19 @@ def main() -> None:
         tester = MazeTester(config.width, config.height, list(config.entry),
                             list(config.exit))
 
+        show_solution = False
+        theme_index = 0
+        theme = THEMES[theme_index]
+        use_animation = True
+
+        tester.wall_char = f"{theme['wall']}██{COLOR_RESET}"
+        tester.pattern_char = f"{theme['pattern']}▓▓{COLOR_RESET}"
+
         current_seed = random.randint(1, 999999)
-        tester.generate(seed=current_seed, animate=True)
+        tester.generate(seed=current_seed, animate=use_animation)
 
         grid = tester.init_ascii_grid()
         tester.apply_walls_to_ascii(grid)
-
-        show_solution = False
-        theme_index = 0
 
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -83,18 +87,16 @@ def main() -> None:
 
             if grid:
                 for row in grid:
-                    line = "".join(row)
-                    line = line.replace("█", f"{theme['wall']}█{COLOR_RESET}")
-                    line = line.replace("▓", f"{theme['pattern']}▓{COLOR_RESET}")
-                    line = line.replace("o ", f"{COLOR_PATH}o {COLOR_RESET}")
-                    line = line.replace("S ", f"{COLOR_START}█ {COLOR_RESET}")
-                    line = line.replace("E ", f"{COLOR_EXIT}█ {COLOR_RESET}")
+                    line = "".join(row).replace("o ", f"{COLOR_PATH}██{COLOR_RESET}") \
+                                    .replace("START ", f"{COLOR_START}██{COLOR_RESET}") \
+                                    .replace("END ", f"{COLOR_EXIT}██{COLOR_RESET}")
                     print(line)
 
+            status_anim = "ON" if use_animation else "OFF"
             print(f"\n{theme['menu']} --- MENU (Seed: {current_seed} | Theme: "
-                  f"{theme['name']}) ---{COLOR_RESET}")
+                  f"{theme['name']} | Anim: {status_anim}) ---{COLOR_RESET}")
             print(f"{theme['menu']}[R] Regenerate | [S] Seed | [C] Color "
-                  f"| [H] Solve | [Q] Quit{COLOR_RESET}")
+                  f"|[A] Anim | [H] Solve | [Q] Quit{COLOR_RESET}")
 
             choice = get_single_key().lower()
 
@@ -102,32 +104,48 @@ def main() -> None:
                 break
             elif choice == 'c':
                 theme_index = (theme_index + 1) % len(THEMES)
+                theme = THEMES[theme_index] 
+
+                tester.wall_char = f"{theme['wall']}██{COLOR_RESET}"
+                tester.pattern_char = f"{theme['pattern']}▓▓{COLOR_RESET}"
+
+                grid = tester.init_ascii_grid()
+                tester.apply_walls_to_ascii(grid)
+                if show_solution:
+                    apply_solution(grid, tester)
             elif choice == 'h':
                 show_solution = not show_solution
                 grid = tester.init_ascii_grid()
                 tester.apply_walls_to_ascii(grid)
                 if show_solution:
                     apply_solution(grid, tester)
+            elif choice == 'a':
+                use_animation = not use_animation
             elif choice == 'r' or choice == 's':
                 if choice == 'r':
                     current_seed = random.randint(1, 999999)
                 else:
                     s_input = input(f"\n{theme['menu']} Seed: {COLOR_RESET}").strip()
                     current_seed = int(s_input) if s_input.isdigit() else current_seed
+                theme = THEMES[theme_index]
 
                 tester = MazeTester(config.width, config.height,
                                     list(config.entry), list(config.exit))
-                tester.generate(seed=current_seed, animate=True)
+
+                tester.wall_char = f"{theme['wall']}██{COLOR_RESET}"
+                tester.pattern_char = f"{theme['pattern']}▓▓{COLOR_RESET}"
+
+                tester.generate(seed=current_seed, animate=use_animation)
                 grid = tester.init_ascii_grid()
                 tester.apply_walls_to_ascii(grid)
                 if show_solution:
                     apply_solution(grid, tester)
 
     except ValidationError as e:
-        print(f"Error: {e}")
+        clean_msg = e.errors()[0]['msg'].replace("Value error, ", "")
+        print(f"Error: {clean_msg}")
     except Exception as e:
         print(f"An error occurred: {e}")
-
 
 
 if __name__ == "__main__":

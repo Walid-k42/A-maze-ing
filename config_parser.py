@@ -14,6 +14,7 @@ class MazeConfig(BaseModel):
     height: int = Field(ge=5, le=100)
     entry: tuple[PositiveInt, PositiveInt]
     exit: tuple[PositiveInt, PositiveInt]
+    output_file: str
     perfect: bool = Field(default=False)
 
     @field_validator('entry', 'exit', mode='before')
