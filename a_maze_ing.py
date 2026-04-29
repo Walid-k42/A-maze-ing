@@ -17,32 +17,38 @@ TITLE = r"""
 """
 
 COLOR_RESET = '\033[0m'
+COLOR_PATH = '\033[94m'
 
 THEMES = [
-    {"name": "Ghost", "wall": "\033[90m", "pattern": "\033[97m",
-     "menu": "\033[90m"},
-    {"name": "Barca", "wall": "\033[34m", "pattern": "\033[31m",
-     "menu": "\033[93m"},
-    {"name": "Cyberpunk", "wall": "\033[95m", "pattern": "\033[96m",
-     "menu": "\033[95m"},
-    {"name": "Hell", "wall": "\033[91m", "pattern": "\033[93m",
-     "menu": "\033[31m"},
+    {"name": "Ghost", "wall": "\033[90m", "pattern": "\033[97m", "menu":
+     "\033[90m"},
+    {"name": "Barca", "wall": "\033[34m", "pattern": "\033[31m", "menu":
+     "\033[93m"},
+    {"name": "Cyberpunk", "wall": "\033[95m", "pattern": "\033[96m", "menu":
+     "\033[95m"},
+    {"name": "Hell", "wall": "\033[91m", "pattern": "\033[93m", "menu":
+     "\033[31m"},
 ]
 
 
 def get_single_key() -> str:
-
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
-
     try:
         tty.setraw(sys.stdin.fileno())
         ch = sys.stdin.read(1)
-
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
     return ch
+
+
+def apply_solution(grid: list[list[str]], tester: MazeTester) -> None:
+    path = tester.solve()
+    for cell in path:
+        cx = cell["x"] * 2 + 1
+        cy = cell["y"] * 2 + 1
+        if grid[cy][cx] not in ["S ", "E "]:
+            grid[cy][cx] = "o "
 
 
 def main() -> None:
@@ -50,88 +56,74 @@ def main() -> None:
         print("Error: Usage: python3 a_maze_ing.py <config_file>")
         sys.exit(1)
 
-    filename = sys.argv[1]
-    valid_data = read_and_split(filename)
-
+    valid_data = read_and_split(sys.argv[1])
     if not valid_data:
         return
 
     try:
         config = MazeConfig(**valid_data)
-
         tester = MazeTester(config.width, config.height, config.entry,
                             config.exit)
 
         current_seed = random.randint(1, 999999)
         tester.generate(seed=current_seed, animate=True)
+
         grid = tester.init_ascii_grid()
         tester.apply_walls_to_ascii(grid)
 
+        show_solution = False
         theme_index = 0
 
         while True:
-
             os.system('cls' if os.name == 'nt' else 'clear')
-
             theme = THEMES[theme_index]
-
             print(f"{theme['menu']}{TITLE}{COLOR_RESET}")
 
             if grid:
                 for row in grid:
                     line = "".join(row)
                     line = line.replace("█", f"{theme['wall']}█{COLOR_RESET}")
-                    line = line.replace("▓",
-                                        f"{theme['pattern']}▓{COLOR_RESET}")
+                    line = line.replace("▓", f"{theme['pattern']}▓{COLOR_RESET}")
+                    line = line.replace("o ", f"{COLOR_PATH}o {COLOR_RESET}")
+                    line = line.replace("S ", f"{theme['menu']}S {COLOR_RESET}")
+                    line = line.replace("E ", f"{theme['wall']}E {COLOR_RESET}")
                     print(line)
 
-            if config.width < 7 or config.height < 5:
-                print(f"{theme['menu']} [!] Warning: The maze is too small to "
-                      f"display the '42' pattern.{COLOR_RESET}")
+            print(f"\n{theme['menu']} --- MENU (Seed: {current_seed} | Theme: "
+                  f"{theme['name']}) ---{COLOR_RESET}")
+            print(f"{theme['menu']}[R] Regenerate | [S] Seed | [C] Color "
+                  f"| [H] Solve | [Q] Quit{COLOR_RESET}")
 
-            print(f"\n{theme['menu']} --- MENU (Seed: {current_seed} | "
-                  f"Theme: {theme['name']}) ---{COLOR_RESET}")
-            print(f"{theme['menu']}[R] Regenerate  |  [S] Enter a seed  |  [C]"
-                  f" Change Color  |  [Q] Quit{COLOR_RESET}")
             choice = get_single_key().lower()
 
             if choice == 'q':
-                os.system('cls' if os.name == 'nt' else 'clear')
-                print("Closing the maze...")
                 break
-
             elif choice == 'c':
                 theme_index = (theme_index + 1) % len(THEMES)
+            elif choice == 'h':
+                show_solution = not show_solution
+                grid = tester.init_ascii_grid()
+                tester.apply_walls_to_ascii(grid)
+                if show_solution:
+                    apply_solution(grid, tester)
+            elif choice == 'r' or choice == 's':
+                if choice == 'r':
+                    current_seed = random.randint(1, 999999)
+                else:
+                    s_input = input(f"\n{theme['menu']} Seed: {COLOR_RESET}").strip()
+                    current_seed = int(s_input) if s_input.isdigit() else current_seed
 
-            elif choice == 'r':
-                current_seed = random.randint(1, 999999)
-                tester = MazeTester(config.width, config.height, config.entry,
-                                    config.exit)
+                tester = MazeTester(config.width, config.height, config.entry, config.exit)
                 tester.generate(seed=current_seed, animate=True)
                 grid = tester.init_ascii_grid()
                 tester.apply_walls_to_ascii(grid)
-
-            elif choice == 's':
-                seed_u = input(f"\n{theme['menu']} Enter your seed and press "
-                               f"[Enter]: {COLOR_RESET}").strip()
-
-                if seed_u.isdigit():
-                    current_seed = int(seed_u)
-                    tester = MazeTester(config.width, config.height,
-                                        config.entry, config.exit)
-                    tester.generate(seed=current_seed, animate=True)
-                    grid = tester.init_ascii_grid()
-                    tester.apply_walls_to_ascii(grid)
-
-                else:
-                    print(f"{theme['wall']} Invalid seed. Please enter a "
-                          f"positive number.{COLOR_RESET}")
+                if show_solution:
+                    apply_solution(grid, tester)
 
     except ValidationError as e:
-        clean_msg = e.errors()[0]['msg'].replace("Value error, ", "")
-        print(f"Error: {clean_msg}")
-    except IndexError:
-        print("Error: Coordinates are out of bounds. Check your config file.")
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":

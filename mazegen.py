@@ -141,3 +141,44 @@ class MazeTester:
                 stack.append({"x": chosen["x"], "y": chosen["y"]})
             else:
                 stack.pop()
+
+    def solve(self) -> list[dict[str, int]]:
+        queue = [{"x": self.entry_x, "y": self.entry_y}]
+        visited = []
+        for y in range(self.height):
+            row = []
+            for x in range(self.width):
+                row.append(False)
+            visited.append(row)
+        parents = {}
+        visited[self.entry_y][self.entry_x] = True
+        target_found = False
+        while len(queue) > 0:
+            current = queue.pop(0)
+            cx = current["x"]
+            cy = current["y"]
+            if cx == self.exit_x and cy == self.exit_y:
+                target_found = True
+                break
+            directions = [
+                {"dx": 0, "dy": -1, "wall": "N"},
+                {"dx": 1, "dy": 0, "wall": "E"},
+                {"dx": 0, "dy": 1, "wall": "S"},
+                {"dx": -1, "dy": 0, "wall": "W"}
+            ]
+            for d in directions:
+                nx = cx + d["dx"]
+                ny = cy + d["dy"]
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    if not visited[ny][nx] and not self.grid[cy][cx][d["wall"]]:
+                        visited[ny][nx] = True
+                        parents[(nx, ny)] = (cx, cy)
+                        queue.append({"x": nx, "y": ny})
+        path = []
+        if target_found:
+            curr = (self.exit_x, self.exit_y)
+            while curr != (self.entry_x, self.entry_y):
+                path.append({"x": curr[0], "y": curr[1]})
+                curr = parents[curr]
+            path.append({"x": self.entry_x, "y": self.entry_y})
+        return path
