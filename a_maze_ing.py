@@ -18,6 +18,8 @@ TITLE = r"""
 
 COLOR_RESET = '\033[0m'
 COLOR_PATH = '\033[94m'
+COLOR_START = '\033[92m'
+COLOR_EXIT = '\033[91m'
 
 THEMES = [
     {"name": "Ghost", "wall": "\033[90m", "pattern": "\033[97m", "menu":
@@ -26,7 +28,7 @@ THEMES = [
      "\033[93m"},
     {"name": "Cyberpunk", "wall": "\033[95m", "pattern": "\033[96m", "menu":
      "\033[95m"},
-    {"name": "Hell", "wall": "\033[91m", "pattern": "\033[93m", "menu":
+    {"name": "Hell", "wall": "\033[93m", "pattern": "\033[91m", "menu":
      "\033[31m"},
 ]
 
@@ -62,8 +64,8 @@ def main() -> None:
 
     try:
         config = MazeConfig(**valid_data)
-        tester = MazeTester(config.width, config.height, config.entry,
-                            config.exit)
+        tester = MazeTester(config.width, config.height, list(config.entry),
+                            list(config.exit))
 
         current_seed = random.randint(1, 999999)
         tester.generate(seed=current_seed, animate=True)
@@ -85,8 +87,8 @@ def main() -> None:
                     line = line.replace("█", f"{theme['wall']}█{COLOR_RESET}")
                     line = line.replace("▓", f"{theme['pattern']}▓{COLOR_RESET}")
                     line = line.replace("o ", f"{COLOR_PATH}o {COLOR_RESET}")
-                    line = line.replace("S ", f"{theme['menu']}S {COLOR_RESET}")
-                    line = line.replace("E ", f"{theme['wall']}E {COLOR_RESET}")
+                    line = line.replace("S ", f"{COLOR_START}█ {COLOR_RESET}")
+                    line = line.replace("E ", f"{COLOR_EXIT}█ {COLOR_RESET}")
                     print(line)
 
             print(f"\n{theme['menu']} --- MENU (Seed: {current_seed} | Theme: "
@@ -113,7 +115,8 @@ def main() -> None:
                     s_input = input(f"\n{theme['menu']} Seed: {COLOR_RESET}").strip()
                     current_seed = int(s_input) if s_input.isdigit() else current_seed
 
-                tester = MazeTester(config.width, config.height, config.entry, config.exit)
+                tester = MazeTester(config.width, config.height,
+                                    list(config.entry), list(config.exit))
                 tester.generate(seed=current_seed, animate=True)
                 grid = tester.init_ascii_grid()
                 tester.apply_walls_to_ascii(grid)
@@ -124,6 +127,7 @@ def main() -> None:
         print(f"Error: {e}")
     except Exception as e:
         print(f"An error occurred: {e}")
+
 
 
 if __name__ == "__main__":

@@ -45,6 +45,27 @@ class MazeConfig(BaseModel):
             raise ValueError(f"The entry {self.entry} and the exit "
                              f"{self.exit} can't be at the same location")
 
+        p_width = 7
+        p_height = 5
+
+        if self.width >= p_width and self.height >= p_height:
+            start_x = int((self.width - p_width) / 2)
+            start_y = int((self.height - p_height) / 2)
+
+            relative_coords = [
+                (0, 0), (0, 1), (0, 2), (1, 2), (2, 0), (2, 1),
+                (2, 2), (2, 3), (2, 4), (4, 0), (5, 0), (6, 0),
+                (6, 1), (4, 2), (5, 2), (6, 2), (4, 3), (4, 4),
+                (5, 4), (6, 4)
+            ]
+
+            pattern_cells = [(start_x + x, start_y + y) for x, y in relative_coords]
+
+            if self.entry in pattern_cells:
+                raise ValueError(f"Entry {self.entry} overlaps with the '42' pattern.")
+            if self.exit in pattern_cells:
+                raise ValueError(f"Exit {self.exit} overlaps with the '42' pattern.")
+
         return self
 
 
