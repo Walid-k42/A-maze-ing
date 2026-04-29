@@ -64,7 +64,7 @@ def main() -> None:
     try:
         config = MazeConfig(**valid_data)
         tester = MazeTester(config.width, config.height, list(config.entry),
-                            list(config.exit))
+                            list(config.exit), is_perfect=config.perfect)
 
         show_solution = False
         theme_index = 0
@@ -76,6 +76,8 @@ def main() -> None:
 
         current_seed = random.randint(1, 999999)
         tester.generate(seed=current_seed, animate=use_animation)
+
+        tester.export_to_hex(config.output_file)
 
         grid = tester.init_ascii_grid()
         tester.apply_walls_to_ascii(grid)
@@ -130,12 +132,16 @@ def main() -> None:
                 theme = THEMES[theme_index]
 
                 tester = MazeTester(config.width, config.height,
-                                    list(config.entry), list(config.exit))
+                                    list(config.entry), list(config.exit),
+                                    is_perfect=config.perfect)
 
                 tester.wall_char = f"{theme['wall']}██{COLOR_RESET}"
                 tester.pattern_char = f"{theme['pattern']}▓▓{COLOR_RESET}"
 
                 tester.generate(seed=current_seed, animate=use_animation)
+
+                tester.export_to_hex(config.output_file)
+
                 grid = tester.init_ascii_grid()
                 tester.apply_walls_to_ascii(grid)
                 if show_solution:

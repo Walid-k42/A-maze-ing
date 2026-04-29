@@ -34,11 +34,11 @@ class MazeConfig(BaseModel):
     @model_validator(mode="after")
     def validate_maze_configs(self) -> 'MazeConfig':
 
-        if self.entry[1] > self.height or self.entry[0] > self.width:
+        if self.entry[1] >= self.height or self.entry[0] >= self.width:
             raise ValueError(f"Entry coordinates {self.entry} can't be "
                              f"outside the maze ({self.height}x{self.width})")
 
-        if self.exit[1] > self.height or self.exit[0] > self.width:
+        if self.exit[1] >= self.height or self.exit[0] >= self.width:
             raise ValueError(f"Exit coordinates {self.exit} can't be "
                              f"outside the maze ({self.height}x{self.width})")
 
@@ -48,8 +48,10 @@ class MazeConfig(BaseModel):
 
         p_width = 7
         p_height = 5
+        safe_width = 11
+        safe_height = 9
 
-        if self.width >= p_width and self.height >= p_height:
+        if self.width >= safe_width and self.height >= safe_height:
             start_x = int((self.width - p_width) / 2)
             start_y = int((self.height - p_height) / 2)
 

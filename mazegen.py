@@ -5,13 +5,15 @@ import os
 
 class MazeTester:
     def __init__(self, width: int, height: int,
-                 entry: list[int], exit_p: list[int]) -> None:
+                 entry: list[int], exit_p: list[int],
+                 is_perfect: bool = True) -> None:
         self.width = width
         self.height = height
         self.entry_x = entry[0]
         self.entry_y = entry[1]
         self.exit_x = exit_p[0]
         self.exit_y = exit_p[1]
+        self.is_perfect = is_perfect
         self.wall_char = "██"
         self.pattern_char = "▓▓"
         self.grid = []
@@ -26,8 +28,11 @@ class MazeTester:
     def setup_42_pattern(self) -> None:
         p_width = 7
         p_height = 5
-        if self.width < p_width or self.height < p_height:
+        safe_width = 11
+        safe_height = 9
+        if self.width < safe_width or self.height < safe_height:
             print("Error: Maze size is too small to display the '42' pattern.")
+            sleep(2)
             return
         start_x = int((self.width - p_width) / 2)
         start_y = int((self.height - p_height) / 2)
@@ -151,6 +156,9 @@ class MazeTester:
             else:
                 stack.pop()
 
+        if not self.is_perfect:
+            self.make_imperfect(chance=0.2, animate=animate)
+
     def solve(self) -> list[dict[str, int]]:
         queue = [{"x": self.entry_x, "y": self.entry_y}]
         visited = []
@@ -192,6 +200,34 @@ class MazeTester:
             path.append({"x": self.entry_x, "y": self.entry_y})
         return path
 
+    def make_imperfect(self, chance: float = 0.02,
+                       animate: bool = False) -> None:
+        for y in range(1, self.height - 1):
+            for x in range(1, self.width - 1):
+                if self.is_pattern_cell(x, y):
+                    continue
+
+                if random.random() < chance:
+                    direction = random.choice(["E", "S"])
+                    nx, ny = (x + 1, y) if direction == "E" else (x, y + 1)
+
+                    if not self.is_pattern_cell(nx, ny):
+                        self.grid[y][x][direction] = False
+                        opp = "W" if direction == "E" else "N"
+                        self.grid[ny][nx][opp] = False
+
+                        if animate:
+                            temp_grid = self.init_ascii_grid()
+                            self.apply_walls_to_ascii(temp_grid)
+                            frame = ""
+                            for line in temp_grid:
+
+                                l_str = "".join(line).replace("START ", "\033[92m██\033[0m") \
+                                                     .replace("END ", "\033[91m██\033[0m")
+                                frame += l_str + "\n"
+                            print(frame, end='', flush=True)
+                            sleep(0.01)
+
     def export_to_hex(self, filename: str) -> None:
         try:
             with open(filename, 'w') as f:
@@ -201,9 +237,9 @@ class MazeTester:
                         val = 0
                         if cell["N"]:
                             val += 1
-                        if cell["S"]:
-                            val += 2
                         if cell["E"]:
+                            val += 2
+                        if cell["S"]:
                             val += 4
                         if cell["W"]:
                             val += 8
@@ -211,5 +247,23 @@ class MazeTester:
                         line_hex += hex(val)[2:].upper()
 
                     f.write(line_hex + "\n")
+                f.write("\n")
+                f.write(f"{self.entry_x},{self.entry_y}\n")
+                f.write(f"{self.exit_x},{self.exit_y}\n")
+
+                path = self.solve()
+                path.reverse()
+
+                path_str = ""
+                for i in range(len(path) - 1):
+                    curr = path[i]
+                    nxt = path[i+1]
+                    if nxt["y"] < curr["y"]: path_str += "N"
+                    elif nxt["y"] > curr["y"]: path_str += "S"
+                    elif nxt["x"] > curr["x"]: path_str += "E"
+                    elif nxt["x"] < curr["x"]: path_str += "W"
+
+                f.write(path_str + "\n")
+
         except Exception as e:
             print(f"Warning: Could not save the hex file. {e}")
