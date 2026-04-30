@@ -101,7 +101,11 @@ def main() -> None:
 
         if config.height > 20 or config.width > 20:
             use_animation = False
-        current_seed = random.randint(1, 999999)
+
+        current_seed = config.seed
+        if current_seed is None:
+            current_seed = random.randint(1, 999999)
+
         tester.generate(seed=current_seed, animate=use_animation)
 
         tester.export_to_hex(config.output_file)
@@ -114,14 +118,18 @@ def main() -> None:
             theme = THEMES[theme_index]
             print(f"{theme['menu']}{TITLE}{COLOR_RESET}")
 
+            path_str = f"{COLOR_PATH}██{COLOR_RESET}"
+            start_str = f"{COLOR_START}██{COLOR_RESET}"
+            end_str = f"{COLOR_EXIT}██{COLOR_RESET}"
+
             if grid:
                 for row in grid:
-                    line = "".join(row).replace("o ", f"{COLOR_PATH}██ \
-                                                {COLOR_RESET}") \
-                                    .replace("START ", f"{COLOR_START} \
-                                             ██{COLOR_RESET}") \
-                                    .replace("END ", f"{COLOR_EXIT}██ \
-                                             {COLOR_RESET}")
+                    line = (
+                        "".join(row)
+                        .replace("o ", path_str)
+                        .replace("START ", start_str)
+                        .replace("END ", end_str)
+                    )
                     print(line)
 
             status_anim = "ON" if use_animation else "OFF"

@@ -50,6 +50,9 @@ The generator relies on a `.txt` configuration file. It uses a `KEY=VALUE` forma
 - `OUTPUT_FILE`: Name of the text file where the hex output will be saved.
 - `PERFECT`: Boolean (`True` or `False`). If `True`, the maze has exactly one path between any two cells. If `False`, random walls are broken to create loops.
 
+**Optional Keys:**
+- `SEED`: Integer used to reproduce the same maze generation. If omitted, a random seed is generated automatically.
+
 **Example:**
 ```text
 WIDTH=15
@@ -58,6 +61,7 @@ ENTRY=0,0
 EXIT=14,14
 OUTPUT_FILE=maze.txt
 PERFECT=True
+SEED=42
 ```
 
 ---
@@ -114,7 +118,7 @@ tester.export_to_hex("my_output.txt")
 ### Planning & Evolution
 We started by defining the data structures (lists of dictionaries to track the 4 cardinal walls of each cell). `elarue` focused on the backend generation while `wakhazza` built the frontend loop and the parser. We then merged our logic to connect the ASCII rendering to the logical grid.
 - **What worked well**: Separating the "logical grid" from the "visual ASCII grid" allowed us to work in parallel without merge conflicts.
-- **What could be improved**: <Optionnel : Remplissez avec une difficulté rencontrée, ex: "La gestion du rafraichissement de l'écran (clear) sur différents OS a demandé plusieurs ajustements pour éviter les clignotements.">
+- **What could be improved**: One of the main challenges was creating smooth terminal animations without display glitches or flickering. Another difficulty was implementing the maze carving algorithm correctly, especially making sure that walls were removed consistently between neighbouring cells.
 
 ### Tools Used
 - **Language**: Python 3.12

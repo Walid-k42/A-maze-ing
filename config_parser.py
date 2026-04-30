@@ -28,6 +28,7 @@ class MazeConfig(BaseModel):
     exit: tuple[PositiveInt, PositiveInt]
     output_file: str
     perfect: bool = Field(default=False)
+    seed: int | None = Field(default=None, ge=0)
 
     @field_validator('width', 'height')
     @classmethod

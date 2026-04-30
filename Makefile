@@ -1,6 +1,12 @@
 install:
-		pip install build pydantic
-		python3 -m build
+	python3 -m pip install --upgrade pip
+	python3 -m pip install build flake8 mypy pydantic
+
+build:
+	python3 -m pip install --upgrade build
+	python3 -m build
+	cp dist/mazegen-1.0.0-py3-none-any.whl .
+	cp dist/mazegen-1.0.0.tar.gz .
 
 run:
 		python3 a_maze_ing.py config.txt
