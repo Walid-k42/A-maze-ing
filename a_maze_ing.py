@@ -1,3 +1,9 @@
+"""
+Main entry point for the A-Maze-ing project.
+Handles the interactive terminal interface, real-time keypress capture,
+and the visual ASCII rendering of the generated maze.
+"""
+
 import sys
 import tty
 import termios
@@ -34,6 +40,13 @@ THEMES = [
 
 
 def get_single_key() -> str:
+    """
+    Captures a single keystroke from the user asynchronously,
+    without requiring them to press the Enter key.
+
+    Returns:
+        str: The character corresponding to the pressed key.
+    """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -45,6 +58,14 @@ def get_single_key() -> str:
 
 
 def apply_solution(grid: list[list[str]], tester: MazeTester) -> None:
+    """
+    Solves the maze and modifies the ASCII grid in place
+    to display the shortest path.
+
+    Args:
+        grid (list[list[str]]): The visual ASCII grid of the maze.
+        tester (MazeTester): The instance containing the BFS solving algorithm.
+    """
     path = tester.solve()
     for cell in path:
         cx, cy = cell["x"] * 2 + 1, cell["y"] * 2 + 1
@@ -53,6 +74,10 @@ def apply_solution(grid: list[list[str]], tester: MazeTester) -> None:
 
 
 def main() -> None:
+    """
+    Main execution loop. Parses CLI arguments, validates configuration,
+    generates the maze, and starts the interactive terminal menu.
+    """
     if len(sys.argv) != 2:
         print("Error: Usage: python3 a_maze_ing.py <config_file>")
         sys.exit(1)
@@ -74,6 +99,8 @@ def main() -> None:
         tester.wall_char = f"{theme['wall']}██{COLOR_RESET}"
         tester.pattern_char = f"{theme['pattern']}▓▓{COLOR_RESET}"
 
+        if config.height > 20 or config.width > 20:
+            use_animation = False
         current_seed = random.randint(1, 999999)
         tester.generate(seed=current_seed, animate=use_animation)
 
@@ -89,9 +116,12 @@ def main() -> None:
 
             if grid:
                 for row in grid:
-                    line = "".join(row).replace("o ", f"{COLOR_PATH}██{COLOR_RESET}") \
-                                    .replace("START ", f"{COLOR_START}██{COLOR_RESET}") \
-                                    .replace("END ", f"{COLOR_EXIT}██{COLOR_RESET}")
+                    line = "".join(row).replace("o ", f"{COLOR_PATH}██ \
+                                                {COLOR_RESET}") \
+                                    .replace("START ", f"{COLOR_START} \
+                                             ██{COLOR_RESET}") \
+                                    .replace("END ", f"{COLOR_EXIT}██ \
+                                             {COLOR_RESET}")
                     print(line)
 
             status_anim = "ON" if use_animation else "OFF"
@@ -106,7 +136,7 @@ def main() -> None:
                 break
             elif choice == 'c':
                 theme_index = (theme_index + 1) % len(THEMES)
-                theme = THEMES[theme_index] 
+                theme = THEMES[theme_index]
 
                 tester.wall_char = f"{theme['wall']}██{COLOR_RESET}"
                 tester.pattern_char = f"{theme['pattern']}▓▓{COLOR_RESET}"
@@ -127,8 +157,10 @@ def main() -> None:
                 if choice == 'r':
                     current_seed = random.randint(1, 999999)
                 else:
-                    s_input = input(f"\n{theme['menu']} Seed: {COLOR_RESET}").strip()
-                    current_seed = int(s_input) if s_input.isdigit() else current_seed
+                    s_input = input(f"\n{theme['menu']} Seed:"
+                                    f"{COLOR_RESET}").strip()
+                    if s_input.isdigit():
+                        current_seed = int(s_input)
                 theme = THEMES[theme_index]
 
                 tester = MazeTester(config.width, config.height,
