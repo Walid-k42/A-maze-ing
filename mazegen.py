@@ -65,7 +65,8 @@ class MazeGenerator:
 
         if self.width < safe_width or self.height < safe_height:
             print("Error: Maze size is too small to display the '42' pattern.")
-            sleep(2)
+            print("Generating the Maze...")
+            sleep(4)
             return
 
         start_x = int((self.width - pattern_width) / 2)
