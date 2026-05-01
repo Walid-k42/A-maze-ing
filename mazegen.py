@@ -6,7 +6,7 @@ from collections import deque
 from time import sleep
 
 
-class MazeTester:
+class MazeGenerator:
     """
     Core class responsible for generating, solving, and exporting the maze.
     It implements an iterative DFS for generation and a BFS for solving,

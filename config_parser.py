@@ -12,6 +12,7 @@ from pydantic import (
 )
 from enum import Enum # NOQA
 from typing import Any, Annotated
+from pathlib import Path
 
 
 PositiveInt = Annotated[int, Field(ge=0, le=100)]
@@ -60,8 +61,20 @@ class MazeConfig(BaseModel):
         Returns:
             str: The validated file name.
         """
-        if not value.endswith('.txt'):
+        path = Path(value)
+
+        if path.is_absolute():
+            raise ValueError("Output file must be a relative filename")
+
+        if path.name != value:
+            raise ValueError("Output file must not contain folders")
+
+        if ".." in path.parts:
+            raise ValueError("Output file must not contain '..'")
+
+        if not value.endswith(".txt"):
             raise ValueError("Output file must be a .txt file")
+
         return value
 
     @field_validator('entry', 'exit', mode='before')
@@ -167,8 +180,9 @@ def read_and_split(filename: str) -> dict[str, Any]:
                     key, value = line.split("=", 1)
                     key = key.strip().lower()
                     value = value.strip()
-
                     configs[key] = value
+                elif '=' not in line:
+                    raise ValueError("'=' is required")
 
     except FileNotFoundError:
         print(f"Error: {filename} not found")

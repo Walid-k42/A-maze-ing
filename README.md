@@ -91,10 +91,10 @@ pip install dist/mazegen-1.0.0-py3-none-any.whl
 
 ### How to use it in your own code:
 ```python
-from mazegen import MazeTester
+from mazegen import MazeGenerator
 
 # 1. Instantiate the generator
-tester = MazeTester(width=20, height=12, entry=[0,0], exit_p=[19,11], is_perfect=True)
+tester = MazeGenerator(width=20, height=12, entry=[0,0], exit_p=[19,11], is_perfect=True)
 
 # 2. Generate the maze (optionally with a specific seed)
 tester.generate(seed=42)
